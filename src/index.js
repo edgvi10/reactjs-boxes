@@ -168,23 +168,23 @@ function App() {
       {
         showQuestion ?
           <section className="text-center">
-            <h2 className="display-4 pt-3 font-weight-bold">📦 {box.number.padStart(2, '0')}/{boxes.length}</h2>
-            <div className="font-weight-light display-4 py-3" onClick={() => { copy(); setShowQuestion(false); }}>{box.question}</div>
+            <h2 className="pt-3 font-weight-bold">📦 {box.number.padStart(2, '0')}/{boxes.length}</h2>
+            <div className="font-weight-light h2 py-3" onClick={() => { copy(); setShowQuestion(false); }}>{box.question}</div>
             <textarea id="question-text" ref={QuestionText} className="box-textarea" defaultValue={"📦 " + box.number.padStart(2, '0') + ": " + box.question}></textarea>
 
-            <div className="fixed-bottom p-3 mx-auto">
+            <div className="fixed-bottom py-3 mx-auto">
               <div className="container">
                 <p className="text-muted small">(toque no texto para copiar)</p>
-                <button onClick={() => { setShowQuestion(false); window.open("whatsapp://send?text=" + encodeURI("📦 " + box.number.padStart(2, '0') + ": " + box.question)); }} className="btn btn-success btn-lg btn-block font-weight-bold text-uppercase mb-2">Enviar no WhatsApp</button>
-                <button onClick={() => setShowQuestion(false)} className="btn btn-info btn-block btn-lg font-weight-bold text-uppercase">Escolher outro</button>
+                <button onClick={() => { setShowQuestion(false); window.open("whatsapp://send?text=" + encodeURI("📦 " + box.number.padStart(2, '0') + ": " + box.question)); }} className="btn btn-success btn-block font-weight-bold text-uppercase mb-2">Enviar no WhatsApp</button>
+                <button onClick={() => setShowQuestion(false)} className="btn btn-info btn-block font-weight-bold text-uppercase">Escolher outro</button>
               </div>
             </div>
           </section>
           :
           <>
             <small onClick={() => unistall()}>v{pkg.version}{boxes.length > 0 && " (?)"}</small>
-            <header className="mb-4 text-center h2">
-              <span className="display-3 d-block m-3">📦</span>
+            <header className="mb-4 text-center h4">
+              <span className="display-4 d-block m-3">📦</span>
               <span className="text-uppercase">Caixa de <b>desafios e perguntas</b></span>
               {boxes.length > 0 && <small className="text-muted d-block" onClick={() => install()}>{boxes.length} caixas</small>}
             </header>
@@ -226,7 +226,7 @@ function App() {
                           )}
                         </select>
                       }
-                      <button type="button" className="btn btn-primary btn-lg btn-block my-4" onClick={() => install()}>Instalar Perguntas</button>
+                      <button type="button" className="btn btn-primary font-weight-bold text-bold btn-block my-3" onClick={() => install()}>Instalar Perguntas</button>
 
                       <div className="small">
                         <p className="d-block mb-2">Este aplicativo não acessa dados, nem arquivos do seu smartphone/computador. Não monitora nem usa sua posição GPS, câmera, mensagens e afins.</p>
@@ -237,12 +237,12 @@ function App() {
                     </>
                     :
                     <>
-                      <form className="form-container fixed-bottom p-3 bg-light" onSubmit={e => sortBox(e)}>
+                      <form className="form-container fixed-bottom pb-3 bg-light" onSubmit={sortBox}>
                         <div className="container">
                           <div className="form-group input-group">
-                            <input type="number" ref={InputNumber} className="form-control form-control-lg text-center" placeholder="Número da caixa" maxlenght="3" autoComplete="off" autoFocus required min="0" max={boxes.length} />
+                            <input type="number" ref={InputNumber} className="form-control text-center" placeholder="Número da caixa" maxlenght="3" autoComplete="off" autoFocus required min="0" max={boxes.length} />
                           </div>
-                          <button type="submit" className="btn btn-success btn-block btn-lg font-weight-bold text-uppercase">Sortear</button>
+                          <button type="submit" className="btn btn-success btn-block font-weight-bold text-uppercase">Sortear</button>
                         </div>
                       </form>
                     </>
