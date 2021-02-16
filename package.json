@@ -5,9 +5,9 @@
     "email": "edgvi10@gmail.com",
     "url": "https://edapp.com.br"
   },
-  "version": "2.8.0",
+  "version": "2.8.9",
   "private": true,
-  "homepage": "/boxes/",
+  "homepage": "/",
   "dependencies": {
     "@testing-library/jest-dom": "^5.11.8",
     "@testing-library/react": "^11.2.2",

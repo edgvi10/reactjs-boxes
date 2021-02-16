@@ -26,6 +26,7 @@ function shuffle(array) {
 }
 
 function App() {
+  var FileName = React.createRef();
   var InputNumber = React.createRef();
   var QuestionText = React.createRef();
 
@@ -33,19 +34,60 @@ function App() {
   const [showQuestion, setShowQuestion] = React.useState(false);
   const [boxes, setBoxes] = React.useState([]);
   const [box, setBox] = React.useState({ number: 0, question: null });
+  const [message, setMessage] = React.useState(null);
+
+  const [groups, setGroups] = React.useState([]);
+
+  let file = decodeURI(window.location.search.substring(1));
+  if (file === "") file = "Padrao";
 
   async function install() {
-    console.log("Instalando perguntas");
-    const response = await fetch("https://edapp.com.br/boxes.json");
-    const data = await response.json();
-    localStorage.setItem("boxes", JSON.stringify(data));
+    setMessage(null);
 
-    setBoxes(data);
+    let filename = null;
+    if (FileName.current !== null)
+      filename = FileName.current.value;
+    else
+      filename = localStorage.getItem("file");
+
+    console.log("Instalando perguntas", filename);
+
+    if (filename !== null) {
+      const request = await fetch("https://api.github.com/gists/d301e9df50ec8b0d757417cf1734e524");
+      const response = await request.json();
+      console.log(response.files);
+      const data = response.files[filename + ".json"];
+
+      if (data !== undefined) {
+        let boxesRaw = data.content.replace(/(\r\n|\n|\r|\s\s)/gm, "");
+        boxesRaw = JSON.parse(boxesRaw);
+        // console.log(JSON.stringify(boxesRaw))
+        localStorage.setItem("file", filename);
+        localStorage.setItem("boxes", JSON.stringify(boxesRaw));
+        setBoxes(boxesRaw);
+
+        console.log(boxesRaw.length + " caixa(s) instaladas(s) na memória");
+      } else {
+        console.log("Arquivo não existe")
+        setMessage("Essas caixas não existem");
+      }
+    } else {
+      console.log("não update")
+      setMessage("Essas caixas não existem");
+    }
   };
+
+  function unistall() {
+    getGroups();
+    setBoxes([]);
+    localStorage.removeItem("boxes");
+    localStorage.removeItem("file");
+    localStorage.removeItem("previousBox");
+    localStorage.removeItem("previousQuestion");
+  }
 
   const sortBox = (event) => {
     event.preventDefault();
-    console.log("sortBox()");
     let requestedBox = InputNumber.current.value;
     let previousBox = localStorage.getItem("previousBox");
     let ShuffledList = shuffle(boxes);
@@ -59,6 +101,10 @@ function App() {
     if (previousBox === null || previousBox !== requestedBox) {
       question = ShuffledList[requestedBox - 1];
       number = requestedBox;
+      if (question === localStorage.getItem("previousQuestion")) {
+        let ShuffledList = shuffle(boxes);
+        question = ShuffledList[requestedBox - 1];
+      }
 
       localStorage.setItem("previousBox", number);
       localStorage.setItem("previousQuestion", question);
@@ -75,13 +121,27 @@ function App() {
   const copy = (e) => {
     var copyText = document.getElementById("question-text");
     copyText.select();
-    copyText.setSelectionRange(0, 99999); /* For mobile devices */
+    copyText.setSelectionRange(0, 99999);
 
-    /* Copy the text inside the text field */
     document.execCommand("copy");
-
-    /* Alert the copied text */
     alert("Pergunta/Desafio Copiado\n\n" + copyText.value);
+  }
+
+  async function getGroups() {
+    const request = await fetch("https://api.github.com/gists/d301e9df50ec8b0d757417cf1734e524");
+    const response = await request.json();
+
+    let list = Object.keys(response.files);
+    console.log(list);
+    let grouplist = [];
+    list.forEach(group => {
+      // console.log(group.search("hidden"));
+      if (group.search("!") !== 0)
+        grouplist.push(group);
+    });
+
+    console.log(grouplist)
+    setGroups(grouplist);
   }
 
   React.useEffect(() => {
@@ -89,12 +149,12 @@ function App() {
       setBoxes(JSON.parse(localStorage.getItem("boxes")));
     }
 
+    getGroups();
     updateIndicator();
   }, []);
 
   function updateIndicator() {
     setOfflineAlert(navigator.onLine);
-    console.log(navigator.onLine);
   }
 
   // Update the online status icon based on connectivity
@@ -122,10 +182,11 @@ function App() {
           </section>
           :
           <>
-            <header className="mb-4 text-center h2" onClick={() => install()}>
+            <small onClick={() => unistall()}>v{pkg.version}{boxes.length > 0 && " (?)"}</small>
+            <header className="mb-4 text-center h2">
               <span className="display-3 d-block m-3">📦</span>
               <span className="text-uppercase">Caixa de <b>desafios e perguntas</b></span>
-              <small className="text-muted d-block">{boxes.length} caixas (v{pkg.version})</small>
+              {boxes.length > 0 && <small className="text-muted d-block" onClick={() => install()}>{boxes.length} caixas</small>}
             </header>
 
             <button type="button" className="btn btn-outline-info mb-2 btn-block font-weight-bold text-uppercase" onClick={() => setHowToPlay(!howToPlay)}>{howToPlay ? "Fechar instruções" : "Como jogar?"}</button>
@@ -155,7 +216,24 @@ function App() {
                 {
                   boxes.length === 0 ?
                     <>
-                      <button type="button" className="btn btn-primary btn-lg btn-block my-4" onClick={() => install()}>Instalar</button>
+                      {file !== "Padrao" ?
+                        <input ref={FileName} type="hidden" value={file} />
+                        :
+                        <select ref={FileName} className="form-control custom-select mt-5">
+                          <option>Selecione as perguntas</option>
+                          {groups.map((group, index) =>
+                            <option key={index} value={group.replace(".json", "")}>{group.replace(".json", "")}</option>
+                          )}
+                        </select>
+                      }
+                      <button type="button" className="btn btn-primary btn-lg btn-block my-4" onClick={() => install()}>Instalar Perguntas</button>
+
+                      <div className="small">
+                        <p className="d-block mb-2">Este aplicativo não acessa dados, nem arquivos do seu smartphone/computador. Não monitora nem usa sua posição GPS, câmera, mensagens e afins.</p>
+                        <p>Aplicativo desenvolvido para diversão e <u>estudo de tecnologias</u> como: ReactJS, PWA Build, Manipulação de LocalStorage, Interação entre Navegador e WhatsApp, Push Notification, ServiceWorkers, além de prova de conceito de uma aplicação de Perguntas e Deafios.</p>
+                      </div>
+                      {file !== "Padrao" && "Caixas: " + file}
+                      {message !== null && <p>{message}</p>}
                     </>
                     :
                     <>
