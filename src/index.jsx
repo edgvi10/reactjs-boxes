@@ -1,10 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
+import './bootstrap.css';
 import './index.css';
+
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 
 import pkg from '../package.json';
-
 
 function shuffle(array) {
   var currentIndex = array.length, temporaryValue, randomIndex;
@@ -26,9 +27,9 @@ function shuffle(array) {
 }
 
 function App() {
-  var FileName = React.createRef();
-  var InputNumber = React.createRef();
-  var QuestionText = React.createRef();
+  const FileName = React.createRef();
+  const InputNumber = React.createRef();
+  const QuestionText = React.createRef();
 
   const [howToPlay, setHowToPlay] = React.useState(false);
   const [showQuestion, setShowQuestion] = React.useState(false);
@@ -182,30 +183,30 @@ function App() {
           </section>
           :
           <>
+            <button type="button" className="btn btn-outline-info btn-sm p-0 px-2 float-right" onClick={() => setHowToPlay(!howToPlay)}>{howToPlay ? "Fechar instruções" : "Como jogar?"}</button>
             <small onClick={() => unistall()}>v{pkg.version}{boxes.length > 0 && " (?)"}</small>
-            <header className="mb-4 text-center h4">
-              <span className="display-4 d-block m-3">📦</span>
+
+            <header className="my-4 text-center h4">
+              <span className="display-4 d-block float-left">📦</span>
               <span className="text-uppercase">Caixa de <b>desafios e perguntas</b></span>
               {boxes.length > 0 && <small className="text-muted d-block" onClick={() => install()}>{boxes.length} caixas</small>}
             </header>
 
-            <button type="button" className="btn btn-outline-info mb-2 btn-block font-weight-bold text-uppercase" onClick={() => setHowToPlay(!howToPlay)}>{howToPlay ? "Fechar instruções" : "Como jogar?"}</button>
-
             {howToPlay ?
               <>
-                <section className={"como-jogar mb-5 bg-light text-success "}>
+                <section className={`mb-5 bg-light como-jogar small`}>
                   <div className="py-3">
                     <header className="">
                       <h3 className="font-weight-bold">Como jogar</h3>
                     </header>
                     <ol className="list-unstyled">
                       <li className="pb-2">01. Peça para alguém escolher um número de <b>01</b> à <b>{boxes.length}</b>.</li>
-                      <li className="pb-2">02. Digite o <b className="btn btn-outline-primary btn-sm">Número da Caixa</b> e clique no botão <b className="btn btn-success btn-sm text-uppercase">Sortear</b>.</li>
-                      <li className="pb-2">03. <b>Tire um Print</b>, <b>copie o texto</b> ou clique no botão <b className="btn btn-success btn-sm">Enviar no WhatsApp</b> e mande direto para pessoa/grupo.</li>
+                      <li className="pb-2">02. Digite o <b className="btn btn-outline-primary btn-sm small p-0 px-2">Número da Caixa</b> e clique no botão <b className="btn btn-success btn-sm small p-0 px-2 text-uppercase">Sortear</b>.</li>
+                      <li className="pb-2">03. <b>Tire um Print</b>, <b>copie o texto</b> ou clique no botão <b className="btn btn-success btn-sm small p-0 px-2">Enviar no WhatsApp</b> e mande direto para pessoa/grupo.</li>
                       <li className="pb-2">04. A pessoa que Pagar o Desafio, poderá desafiar outra pessoa.</li>
                     </ol>
 
-                    <p>OBS: A ordem das caixas é <b>definida aleatoriamente de <u>usuário para usuário</u></b> <span className="text-primary">não adianta escolher o mesmo número sempre, pois a pergunta/desafio muda.</span></p>
+                    <p>OBS: A ordem das caixas é <b>definida aleatoriamente de <u>usuário para usuário</u></b> <span className="text-danger">não adianta escolher o mesmo número sempre, pois a pergunta/desafio muda.</span></p>
 
                     <p className="bg-danger text-light text-center p-3">Atenção! Pode conter perguntas e desafios +18.</p>
                   </div>
@@ -240,7 +241,7 @@ function App() {
                       <form className="form-container fixed-bottom pb-3 bg-light" onSubmit={sortBox}>
                         <div className="container">
                           <div className="form-group input-group">
-                            <input type="number" ref={InputNumber} className="form-control text-center" placeholder="Número da caixa" maxlenght="3" autoComplete="off" autoFocus required min="0" max={boxes.length} />
+                            <input type="number" pattern="[0-9]*" inputMode="numeric" ref={InputNumber} className="form-control text-center" placeholder="Número da caixa" maxlenght="3" autoComplete="off" autoFocus required min="0" max={boxes.length} />
                           </div>
                           <button type="submit" className="btn btn-success btn-block font-weight-bold text-uppercase">Sortear</button>
                         </div>
