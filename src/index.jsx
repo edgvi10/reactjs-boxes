@@ -34,6 +34,9 @@ function App() {
   const [howToPlay, setHowToPlay] = React.useState(false);
   const [showQuestion, setShowQuestion] = React.useState(false);
   const [boxes, setBoxes] = React.useState([]);
+  const [usedAll, setUsedAll] = React.useState(false);
+
+  const [repeat, setRepeat] = React.useState(false);
   const [box, setBox] = React.useState({ number: 0, question: null });
   const [message, setMessage] = React.useState(null);
 
@@ -81,42 +84,66 @@ function App() {
   function unistall() {
     getGroups();
     setBoxes([]);
+    setUsedAll(false);
     localStorage.removeItem("boxes");
     localStorage.removeItem("file");
+    localStorage.removeItem("usedBoxes");
     localStorage.removeItem("previousBox");
     localStorage.removeItem("previousQuestion");
+  }
+
+  function getQuestion(requestedBox) {
+    let usedBoxes = localStorage.getItem("usedBoxes");
+
+    if (usedBoxes === null) usedBoxes = [];
+    else usedBoxes = JSON.parse(usedBoxes);
+
+    let question;
+    let ShuffledList = shuffle(boxes);
+    question = ShuffledList[requestedBox - 1];
+
+    if (question === localStorage.getItem("previousQuestion") || usedBoxes.includes(question)) {
+      question = getQuestion(requestedBox)
+    }
+
+    return question;
   }
 
   const sortBox = (event) => {
     event.preventDefault();
     let requestedBox = InputNumber.current.value;
     let previousBox = localStorage.getItem("previousBox");
-    let ShuffledList = shuffle(boxes);
+    let usedBoxes = localStorage.getItem("usedBoxes");
 
-    console.log(
-      "requestedBox: " + requestedBox,
-      "previousBox: " + previousBox
-    );
+    if (usedBoxes === null) usedBoxes = [];
+    else usedBoxes = JSON.parse(usedBoxes);
 
-    let number, question;
-    if (previousBox === null || previousBox !== requestedBox) {
-      question = ShuffledList[requestedBox - 1];
-      number = requestedBox;
-      if (question === localStorage.getItem("previousQuestion")) {
-        let ShuffledList = shuffle(boxes);
-        question = ShuffledList[requestedBox - 1];
+    if (usedAll) {
+      window.alert("todas as perguntas foram usadas");
+    } else {
+      let number, question;
+      if (previousBox === null || previousBox !== requestedBox) {
+        question = getQuestion(requestedBox);
+        number = requestedBox;
+
+        if (!repeat) usedBoxes.push(question);
+
+        if (usedBoxes.length >= boxes.length) setUsedAll(true);
+
+        usedBoxes = JSON.stringify(usedBoxes);
+
+        localStorage.setItem("previousBox", number);
+        localStorage.setItem("usedBoxes", usedBoxes);
+        localStorage.setItem("previousQuestion", question);
+      } else {
+        number = localStorage.getItem("previousBox");
+        question = localStorage.getItem("previousQuestion");
       }
 
-      localStorage.setItem("previousBox", number);
-      localStorage.setItem("previousQuestion", question);
-    } else {
-      number = localStorage.getItem("previousBox");
-      question = localStorage.getItem("previousQuestion");
+      setBox({ number, question });
+      InputNumber.current.value = "";
+      setShowQuestion(true);
     }
-
-    setBox({ number, question });
-    InputNumber.current.value = "";
-    setShowQuestion(true);
   };
 
   const copy = (e) => {
@@ -148,14 +175,40 @@ function App() {
   React.useEffect(() => {
     if (localStorage.getItem("boxes") !== null) {
       setBoxes(JSON.parse(localStorage.getItem("boxes")));
+
+      if (localStorage.getItem("repeat") === null) {
+        setRepeat(true);
+        localStorage.setItem("repeat", "true")
+      } else {
+        setRepeat(JSON.parse(localStorage.getItem("repeat")))
+      }
+      if (localStorage.getItem("usedBoxes") !== null) {
+        let a = JSON.parse(localStorage.getItem("boxes"));
+        let b = JSON.parse(localStorage.getItem("usedBoxes"));
+
+        if (a >= b && !usedAll) {
+          setUsedAll(true);
+        }
+      }
     }
+
 
     getGroups();
     updateIndicator();
-  }, []);
+  }, [usedAll]);
 
   function updateIndicator() {
     setOfflineAlert(navigator.onLine);
+  }
+
+  function clearUsed() {
+    localStorage.removeItem("usedBoxes");
+    setUsedAll(false);
+  }
+
+  function changeRepeat(status) {
+    localStorage.setItem("repeat", JSON.stringify(status));
+    setRepeat(status);
   }
 
   // Update the online status icon based on connectivity
@@ -227,6 +280,8 @@ function App() {
                           )}
                         </select>
                       }
+
+                      <label htmlFor="repetir" className={`d-block text-center py-3`}><input type="checkbox" id="repetir" defaultChecked={repeat} onChange={(event) => changeRepeat(event.target.checked)} /> Repetir perguntas?</label>
                       <button type="button" className="btn btn-primary font-weight-bold text-bold btn-block my-3" onClick={() => install()}>Instalar Perguntas</button>
 
                       <div className="small">
@@ -240,10 +295,20 @@ function App() {
                     <>
                       <form className="form-container fixed-bottom pb-3 bg-light" onSubmit={sortBox}>
                         <div className="container">
-                          <div className="form-group input-group">
-                            <input type="number" pattern="[0-9]*" inputMode="numeric" ref={InputNumber} className="form-control text-center" placeholder="Número da caixa" maxlenght="3" autoComplete="off" autoFocus required min="0" max={boxes.length} />
-                          </div>
-                          <button type="submit" className="btn btn-success btn-block font-weight-bold text-uppercase">Sortear</button>
+                          {usedAll ?
+                            <>
+                              <p className="alert alert-info text-center">Todas as perguntas e desafios foram feitos :O</p>
+
+                              <button className="btn btn-block btn-lg w-100 btn-info text-uppercase font-weight-bold" onClick={() => { clearUsed() }}>Reiniciar</button>
+                            </>
+                            :
+                            <>
+                              <div className="form-group input-group">
+                                <input type="number" pattern="[0-9]*" inputMode="numeric" ref={InputNumber} className="form-control text-center" placeholder="Número da caixa" maxlenght="3" autoComplete="off" autoFocus required min="0" max={boxes.length} />
+                              </div>
+                              <button type="submit" className="btn btn-success btn-block font-weight-bold text-uppercase">Sortear</button>
+                            </>
+                          }
                         </div>
                       </form>
                     </>
