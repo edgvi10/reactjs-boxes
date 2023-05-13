@@ -247,7 +247,7 @@ function App() {
 
             {howToPlay ?
               <>
-                <section className={`mb-5 bg-light como-jogar small`}>
+                <section className={`mb-5 como-jogar small`}>
                   <div className="py-3">
                     <header className="">
                       <h3 className="font-weight-bold">Como jogar</h3>
@@ -293,7 +293,7 @@ function App() {
                     </>
                     :
                     <>
-                      <form className="form-container fixed-bottom pb-3 bg-light" onSubmit={sortBox}>
+                      <form className="form-container fixed-bottom pb-3" onSubmit={sortBox}>
                         <div className="container">
                           {usedAll ?
                             <>
